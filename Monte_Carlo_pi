@@ -1,14 +1,21 @@
 Monte Carlo 发计算pi
 
-val count = sc.parallelize(1 to n, slices).map { i =>
-  val x = random * 2 - 1!
-  val y = random * 2 - 1!
-  if (x*x + y*y < 1) 1 else 0!
-}.reduce(_ + _)
+import scala.math
 
-println("Pi is roughly " + 4.0 * count / n)
-}
+1. parallelize 方法
 
-1.parallelize 方法
+2. monte carlo 法的逻辑
 
-2.monte carlo 法的逻辑
+3.x,y 在一个圆内 x*x +y*y < 1
+
+4.使用频率代替概率
+
+var slice = 2;
+var n = 10000000;
+var count = sc.parallelize(1 to n,slice).map{ i=>
+    var x = random
+    var y = random
+    if(x*x + y*y < 1) 1 else 0
+}.reduce(_+_)
+
+count * 4.0 / n
