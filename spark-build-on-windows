@@ -1,10 +1,14 @@
-- bash not found in directory : 安装git，将bin path配置进入path
-- [ERROR] PermGen space -> [Help 1]：
-export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
+1 bash not found in directory : 安装git，将bin path配置进入path
+2 [ERROR] PermGen space -> [Help 1]：
+    - export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=512M -XX:ReservedCodeCacheSize=512m"
 
--  Failure to transfer org.apache.maven.plugins:maven-compiler-plugin:pom:2.0.2 from
+3  Failure to transfer org.apache.maven.plugins:maven-compiler-plugin:pom:2.0.2 from
 
     - Locate the {user}/.m2/repository (Using Juno /Win7 here)
     - In the Search field in upper right of window, type ".lastupdated". Windows will look through all subfolders for these files in the directory. (I did not look through cache.)
     - Remove them by Right-click > Delete (I kept all of the lastupdated.properties).
     - Then go back into Eclipse, Right-click on the project and select Maven > Update Project. I selected to "Force Update of Snapshots/Releases". Click Ok and the dependencies finally resolved correctly.
+
+4   Failed to locate the winutils binary in the hadoop binary path
+    - in spark-shell.dll set HADOOP_HOME=XXX
+    - put the winutils.dll in xxx/bin
