@@ -1,0 +1,27 @@
+1.spark 为什么能提高性能
+ <1> 在并行计算阶段之间能够高效地数据共享
+ <2> 容错机制
+ 
+ 2.spark rdd 的transformation /action
+  <1> transformation
+      map:
+      flatMap:
+      filter:
+      groupBy
+      sortBy
+      sortByKey
+      partitonby
+    <2> action
+      reduce
+      count:
+      first
+      collect
+      lookup
+      save
+      
+  3.rdd的抽象
+  <1> 分区：partitions
+  <2> 依赖：宽依赖、窄依赖
+  <3> 基于父rdd的计算函数
+  <4> 划分策略
+  <5> 数据位置的元数据
