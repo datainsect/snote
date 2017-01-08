@@ -1,0 +1,82 @@
+1. partitioner:An object that defines how the elements in a key-value pair RDD are partitioned by key. 
+Maps each key to a partition ID, from 0 to `numPartitions - 1`.
+<1> 必须是key-value 的pairRdd
+<2> abstract class Partitioner extends Serializable {
+     def numPartitions: Int
+     def getPartition(key: Any): Int
+    }
+    
+    numPartitions: 多少个分区
+    getpartition:通过Rdd的key划分到分区里面去
+    
+2.HashPartitioner：
+
+class HashPartitioner(partitions: Int) extends Partitioner {
+  require(partitions >= 0, s"Number of partitions ($partitions) cannot be negative.")
+
+  def numPartitions: Int = partitions
+
+  def getPartition(key: Any): Int = key match {
+    case null => 0
+    case _ => Utils.nonNegativeMod(key.hashCode, numPartitions)
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case h: HashPartitioner =>
+      h.numPartitions == numPartitions
+    case _ =>
+      false
+  }
+
+  override def hashCode: Int = numPartitions
+}
+3. RangePartitioner：水塘抽样，确定边界///需要进一步的研究
+
+
+4.CombineKeyPartitioner:
+
+:paste
+
+import org.apache.spark.Partitioner
+
+case class SecondarySortKey(k1: Int, k2: Int)
+
+object SecondarySortKey {
+    implicit def ordering[A <: SecondarySortKey] : Ordering[A] = {
+       Ordering.by(ssk => (ssk.k1, ssk.k2))
+    }
+}
+  
+def createKey(inputArr:Array[String]):SecondarySortKey = {
+  val k1 = inputArr(0).toInt;
+  val k2 = inputArr(1).toInt;
+  SecondarySortKey(k1,k2);
+}
+
+
+
+def createKeyValueTuple(line: String) :(SecondarySortKey,String) = {
+      (createKey(line.split(" ")),"")
+}
+
+def nonNegativeMod(x: Int, mod: Int): Int = {
+    val rawMod = x % mod
+    rawMod + (if (rawMod < 0) mod else 0)
+  }
+
+class SSPartitioner(partitions: Int) extends org.apache.spark.Partitioner {
+    require(partitions >= 0, s"Number of partitions ($partitions) cannot be negative.")
+    override def numPartitions: Int = partitions
+    override def getPartition(key: Any): Int = {
+      val k = key.asInstanceOf[SecondarySortKey]
+      nonNegativeMod(k.hashCode(),numPartitions)
+    }
+}
+
+val cook = sc.textFile("DataSet/cook.txt");
+
+val secondarySortInput = cook.map( line => createKeyValueTuple(line) )
+
+val sorted = secondarySortInput.repartitionAndSortWithinPartitions(new SSPartitioner(1))
+
+疑问：sspartitioner 只有一个partition,那么这个排序还是在内存排序的吗？有多个partition会有效率的提高吗?
