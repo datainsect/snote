@@ -1,0 +1,52 @@
+import org.apache.spark.Partitioner
+
+val N = 10;
+
+//1.读取三个rdd，预处理，reduce
+val pattern= """([a-z]|[A-Z])+""";
+
+val rdd1 = sc.textFile("DataSet/text-input/text_1/*");
+val rdd1Filterd = rdd1.filter(word => word.length >2 && (word matches pattern));
+var rdd1Maped = rdd1Filterd.map(word => (word.toLowerCase,1)).reduceByKey(_ + _);
+
+val rdd2 = sc.textFile("DataSet/text-input/text_2/*");
+val rdd2Filterd = rdd2.filter(word => word.length >2 && (word matches pattern));
+val rdd2Maped = rdd2Filterd.map(word => (word.toLowerCase,1)).reduceByKey(_ + _);
+
+val rdd3 = sc.textFile("DataSet/text-input/text_3/*");
+val rdd3Filterd = rdd3.filter(word => word.length >2 && (word matches pattern));
+val rdd3Maped = rdd3Filterd.map(word => (word.toLowerCase,1)).reduceByKey(_ + _);
+//2.将三个rdd union，repartition with HashPartitioner
+val unionrdd = rdd1Maped union rdd2Maped union rdd3Maped;
+
+unionrdd.saveAsText("DataSet/text-input/text_union")
+
+val numPartitions = 10 //unionrdd.getNumPartitions
+
+val  partitioner = new org.apache.spark.HashPartitioner(numPartitions);
+
+//unionrdd.repartition(unionrdd.partitions)
+val repartitionedRdd = unionrdd.partitionBy(partitioner);
+
+def reduce(t:Iterator[(String, Int)]) = {
+  val hashMep = new scala.collection.mutable.HashMap[String,Int]();
+  while(t.hasNext){
+    val (key,value)=t.next;
+    val value1 = hashMep.getOrElse(key,0);
+    val kvp = (key,value + value1)
+    hashMep += kvp;
+  }
+  val topN= hashMep.toList.sortWith(_._2 > _._2).take(N)
+  topN.iterator
+}
+
+
+val reducedWithinPartition = repartitionedRdd.mapPartitions(reduce)
+
+//4. compute topN in universal env.
+
+val topN = reducedWithinPartition.sortBy(t => t._2,false).take(N)
+
+//topN: Array[(String, Int)] = Array((the,24514), (and,14196), (jump,9052), (programming,8402), (functional,8340), (haskell,7654), (for,6530), (scala,5202), (with,5170), (retrieved,3780))
+
+// 使用了mappartition 问题： 1.partition内部的数据能否放在内存 2.
