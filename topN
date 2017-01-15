@@ -1,9 +1,11 @@
 import org.apache.spark.Partitioner
+import java.io._
 
 val N = 10;
 
 //1.读取三个rdd，预处理，reduce
 val pattern= """([a-z]|[A-Z])+""";
+
 
 val rdd1 = sc.textFile("DataSet/text-input/text_1/*");
 val rdd1Filterd = rdd1.filter(word => word.length >2 && (word matches pattern));
@@ -17,11 +19,36 @@ val rdd3 = sc.textFile("DataSet/text-input/text_3/*");
 val rdd3Filterd = rdd3.filter(word => word.length >2 && (word matches pattern));
 val rdd3Maped = rdd3Filterd.map(word => (word.toLowerCase,1)).reduceByKey(_ + _);
 //2.将三个rdd union，repartition with HashPartitioner
-val unionrdd = rdd1Maped union rdd2Maped union rdd3Maped;
+val unionrdd = (rdd1Maped union rdd2Maped union rdd3Maped).reduceByKey(_+_);
 
-unionrdd.saveAsText("DataSet/text-input/text_union")
+//=============================
+val N = 10;
 
-val numPartitions = 10 //unionrdd.getNumPartitions
+val dir = new File("C:/Taiji_Repository");
+//C:/Users/gliu22/practice/DataSet
+
+def file2Rdd(file:String) = {
+   val pattern= """([a-z]|[A-Z])+""";
+   var rdd = sc.textFile(file);
+   val rddFilterd = rdd1.filter(word => word.length >5 && (word matches pattern));
+   val rddMaped = rddFilterd.map(word => (word.toLowerCase,1)).reduceByKey(_ + _); 
+   rddMaped;
+}
+
+def filesInDir(dir: File): Iterator[String] = {  
+        val d = dir.listFiles.filter(_.isDirectory)  
+        val f = dir.listFiles.filter(_.isFile).map(_.getAbsolutePath).toIterator  
+        f ++ d.toIterator.flatMap(filesInDir _)
+}
+
+val files = filesInDir(dir); 
+
+val rdds = files.map(file2Rdd(_))
+
+val unionrdd = rdds.foldLeft(rdd1Maped,union)
+//unionrdd.saveAsText("DataSet/text-input/text_union")
+
+val numPartitions = unionrdd.getNumPartitions
 
 val  partitioner = new org.apache.spark.HashPartitioner(numPartitions);
 
@@ -29,14 +56,20 @@ val  partitioner = new org.apache.spark.HashPartitioner(numPartitions);
 val repartitionedRdd = unionrdd.partitionBy(partitioner);
 
 def reduce(t:Iterator[(String, Int)]) = {
-  val hashMep = new scala.collection.mutable.HashMap[String,Int]();
+  val topN = new scala.collection.mutable.ArrayBuffer[(String,Int)]();
   while(t.hasNext){
-    val (key,value)=t.next;
-    val value1 = hashMep.getOrElse(key,0);
-    val kvp = (key,value + value1)
-    hashMep += kvp;
+    val tuple = t.next;
+    if(topN.isEmpty) {
+     topN += tuple;
+    }
+    else {
+      val min = topN.minBy( t => t._2);
+      if(tuple._2>min._2){
+        val minIndex = topN.indexOf(min);
+        topN(minIndex) = tuple;
+      }
+    }
   }
-  val topN= hashMep.toList.sortWith(_._2 > _._2).take(N)
   topN.iterator
 }
 
