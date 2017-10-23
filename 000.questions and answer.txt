@@ -1,3 +1,10 @@
+0. what is the difference between repartition and coalsce?
+   0> repartition(partitionsNum) = coalsce(partitionsNum,shuffle=true);
+   1>. repartition 是经过shuffle的再分区；在将partition变大或者变小很多(1000->1)的情况下使用。
+   2>. coalsce(partitionsNum,shuffle=true): partition变动不大(1000->100)，是一个narrowDependency
+
+
 1. what is the difference between groupbykey,reducebykey,aggregateByKey?
 
-2.
+
+2. Parent/getDependenct
