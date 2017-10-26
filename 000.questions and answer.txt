@@ -1,5 +1,5 @@
 0. what is the difference between repartition and coalsce?
-   0> repartition(partitionsNum) = coalsce(partitionsNum,shuffle=true);
+   0>. repartition(partitionsNum) = coalsce(partitionsNum,shuffle=true);
    1>. repartition 是经过shuffle的再分区；在将partition变大或者变小很多(1000->1)的情况下使用。
    2>. coalsce(partitionsNum,shuffle=true): partition变动不大(1000->100)，是一个narrowDependency
 
@@ -8,3 +8,39 @@
 
 
 2. Parent/getDependenct
+
+
+3.what is map/combiner/reduce/partition function type for hadoop?
+  IMapper extends Mapper[Tkey,Tvalue,Tkey1,Tvalue1] :
+      map(key:Tkey,value:Tvalue,context:Context):void = {
+         key1:Tkey1 = getMapKey(key,Value);
+         value1:Tvalue1 = getMapValue(key,value);
+         context.write(key1,value1);
+      }
+   
+  IPartioner extends Partitioner[Tke1,TValue1] :
+      getPartition(key1:Tkey1,value1:Tvalue1，numPartitions:Int):void = {
+         num:Int = getParition(key1,value1,numPartitions);
+         reutrn num;
+      }
+      
+  ICombiner  extends Reducer[Tkey1,Tvalue1,Tkey1,Tvalue1]:
+      reduce(key:Tkey1,values:Iterable[Tvalue1],contex:Contex):void = {
+         key1:Tkey1 = getCombineKey(key,Values);
+         value1:Tvalue1 = getCombineValue(key,values);
+         context.write(key1,value1);
+      }
+      
+    
+   IReducer  extends Reducer[Tkey1,Tvalue1,Tkey2,Tvalue2]:
+      reduce(key:Tkey1,values:Iterable[Tvalue1],contex:Contex):void = {
+         key1:Tkey1 = getCombineKey(key,Values);
+         value1:Tvalue1 = getCombineValue(key,values);
+         context.write(key1,value1);
+      }
+      
+4.what is all the type for all operators(transformation(narrow/shuffle)/action) in spark:
+
+
+5.how to write a partitioner in spark:
+
