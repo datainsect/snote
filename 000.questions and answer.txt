@@ -45,3 +45,5 @@
 5.how to write a partitioner in spark:
 
 6.saveastextFile saveAsObjectFile 和 serillizer 的关系
+
+7.combineByKey 求平均值怎么求
