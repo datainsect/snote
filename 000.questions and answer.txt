@@ -5,7 +5,7 @@
 
 
 1. what is the difference between groupbykey,reducebykey,aggregateByKey?
-
+   0> 都是调用combineByKeyWithClassTag，最大的区别在于groupBykey 将mapsideCombine设置为false
 
 2. Parent/getDependenct
 
@@ -40,10 +40,51 @@
       }
       
 4.what is all the type for all operators(transformation(narrow/shuffle)/action) in spark:
-
-
+    0> Narrow Transformations:
+       map:
+       flatMap:
+       mapPartitions:
+       filter:
+       union:
+       keyBy:
+       zip:?
+       zipWithIndex:?
+       sample:
+       
+    1> shuffle Transformations:
+       distinct:
+       groupBy:
+       groupByKey:
+       reduceBy:
+       reduceByKey:
+       combineByKey:
+       cogroup:
+       join:
+       sortByKey:
+     
+     2> actions :
+        collect:
+        count:
+        countByKey:
+        first:
+        take:
+        foreach:
+        saveAsTextFile:
+        saveAsObjectFile:
+        reduce:
+        
 5.how to write a partitioner in spark:
-
+ def IPartition(partitionsNum: Int) extends Partitioner {
+      
+      require(partitions >= 0, s"Number of partitions ($partitions) cannot be negative.")
+      override def numPartitions: Int = partitions
+      
+      override def getPartition(key: Any): Int = {
+         val k = key.asInstanceOf[IClass]
+         nonNegativeMod(k.hashCode(),numPartitions)
+      }
+ }
+ 
 6.saveastextFile saveAsObjectFile 和 serillizer 的关系
 
-7.combineByKey 求平均值怎么求
+7.combineByKeyWithClassTag 求平均值怎么求
