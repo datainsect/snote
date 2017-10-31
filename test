@@ -56,10 +56,12 @@ def initialCenters(centerNums:Int,minPoint:Point,maxPoint:Point):Array[Point] = 
   return centers;
 }
 
-var centers = sc.broadcast(initialCenters(centerNums,minPoint,maxPoint));
+
 var i = 0 ;
 var changed = Long.MaxValue;
 var pointsNum = points.count;
+val centers = sc.makeRDD(initialCenters(centerNums,minPoint,maxPoint));
+centers.saveAsTextFile("kmeans/centers_"+i);
 points.saveAsTextFile("kmeans/points_"+i);
 
 while(i<maxIter && changed > 3){
@@ -72,17 +74,25 @@ while(i<maxIter && changed > 3){
    }
    val before = pointsRead.map(point =>(point.id,point.centerId));
    before.saveAsTextFile("kmeans/before_"+i);
-   val processed = pointsRead.map(assignTocenters(_,centers.value));
+
+   val inputsC = sc.textFile("kmeans/centers_"+i).filter(_.length>0);
+   val centersRdd = inputsC.map{
+      e =>
+        val splited = e.split("\t");
+        new Point(splited(0).toDouble,splited(1).toDouble,splited(2).toLong)
+   }
+   val centers = centersRdd.collect;
+
+   val processed = pointsRead.map(assignTocenters(_,centers));
+   processed.saveAsTextFile("kmeans/points_"+(i+1));
    val after = processed.map(point =>(point.id,point.centerId));
    after.saveAsTextFile("kmeans/after_"+i);
    val all = before.union(after).distinct.count;
    changed = all - pointsNum;
    val keyByCenter = processed.map(point => (point.centerId,(point,1)));
    val centersSumRdd  = keyByCenter.reduceByKey((p1,p2) => (sum(p1._1,p2._1),p1._2+p2._2));
-   val centersRdd = centersSumRdd.map(_._2).map(p => devide(p._1,p._2));
-   val centerArray=centersRdd.collect.toArray
-   centers = sc.broadcast(centersRdd.collect.toArray);
+   val caculatedCenter= centersSumRdd.map(_._2).map(p => devide(p._1,p._2));
    i += 1;
-   processed.saveAsTextFile("kmeans/points_"+i);
+   caculatedCenter.saveAsTextFile("kmeans/centers_"+i);
    println("round:" +  i+"  changed:" + changed)
 }
