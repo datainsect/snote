@@ -1,4 +1,5 @@
 //// start of class point
+//// start of class point
 class Point(_x:Double,_y:Double,_id:Long=0,_centerId:Long=0) extends java.io.Serializable{
    val x = _x;
    val y = _y;
@@ -12,14 +13,10 @@ def distance(p1:Point,p2:Point):Double = {
 }
 
 def assignTocenters(point:Point,centers:Array[Point]):Point = {
-  var minDistance = distance(point,centers(point.centerId.toInt));
-  for(center <- centers){
-    val distc = distance(point,center);
-    if(distc<minDistance){
-      minDistance = distc;
-      point.centerId = center.id;
-    }
-  }
+  println("running")
+  val center = centers.minBy(distance(_,point));
+  if(point.centerId!=center.id) println("centerChanged");
+  point.centerId = center.id;
   return point
 }
 
@@ -45,7 +42,7 @@ val maxPoint = points.reduce{
 };
 
 
-val centerNums = 50;
+val centerNums = 3;
 val maxIter = 500;
 def initialCenters(centerNums:Int,minPoint:Point,maxPoint:Point):Array[Point] = {
   val centers = new Array[Point](centerNums);
@@ -61,20 +58,20 @@ def initialCenters(centerNums:Int,minPoint:Point,maxPoint:Point):Array[Point] = 
 }
 
 var centers = sc.broadcast(initialCenters(centerNums,minPoint,maxPoint));
-
 var i = 0 ;
 var changed = Long.MaxValue;
 var pointsNum = points.count;
+var previous = points.map(point =>(point.id,point.centerId));
 while(i<maxIter && changed > 3){
-   val previous = points;
-   points = points.map(point => assignTocenters(point,centers.value));
+   points = points.map(assignTocenters(_,centers.value));
+   val id_centerId = points.map(point =>(point.id,point.centerId));
+   val unioned = previous.union(id_centerId).distinct;
+   changed = unioned.count - pointsNum;
    val keyByCenter = points.map(point => (point.centerId,(point,1)));
    val centersSumRdd  = keyByCenter.reduceByKey((p1,p2) => (sum(p1._1,p2._1),p1._2+p2._2));
    val centersRdd = centersSumRdd.map(_._2).map(p => devide(p._1,p._2));
    centers = sc.broadcast(centersRdd.collect.toArray);
-   val unioned = points.map(point=>(point.id,point.centerId)).union(previous.map(point=>(point.id,point.centerId)))
-   val num = unioned.keyBy(p=>p).reduceByKey((p1,p2)=>p1);
-   changed = num.count - pointsNum;
+   
    i += 1;
    println("round:" +  i+"  changed:" + changed)
 }
