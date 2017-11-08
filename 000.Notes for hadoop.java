@@ -1,3 +1,5 @@
+0. Hadoop 如何设置Map的数量
+
 1. SecondarySort with MapReduce
 
    1> public class SSKey implements WritableComparable<SSKey> {
@@ -50,7 +52,7 @@
         }
        }
        
-     4> public class SSKMapper extends Mapper<Object,Text,SSKey,Text> {
+     4> public class SSKMapper extends Mapper<LongWritable,Text,SSKey,Text> {
          public static SSKey ssk = new SSKey();
          @override
          public void map(Object k,Text v,Context context){
@@ -68,4 +70,70 @@
             }
          }
        }
+
+2. DistributedCacheFile in hadoop;
+   1> Job job = Job.getInstance(new JobConf());
+      job.addCacheFile("hdfs://myhdfs/distrubutedcachefile");
+
+   2> setup in mapper/reducer:
+      public class IMapper extends Mapper(LongWritable,Text,Object,Text){
+         
+         @override
+         public void setup(Contex context) throws IOException{
+            URI[] FileUris = context.getLocalCachedFiles();
+            for(URI uri:FileUris){
+               File file = new File(uri.getName);
+               FileReader fr = new FireReader(file);
+               BufferReader bf = new BufferReader(fr);
+               String line = "";
+               while((line=bf.readLine())!=null){
+                  //...
+               }
+            }
+         }
+      }
      
+3.Map Side Join
+   1> Job job = Job.getInstance(getConf(),"");
+      job.addCacheFile("hdfs://myhdfs/distrubutedcachefile");
+      
+      job.setJarByClass(LogProcessor.class);
+      job.setMapperClass(joinMapper.class);
+      job.setReduceNum(0);
+
+      job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(Text.class);
+
+      //job.setOutputKeyClass(Text.class);
+		//job.setOutputValueClass(IntWritable.class);
+		//job.setInputFormatClass(LongInputFormat.class);
+		//job.setOutputFormatClass(TextOutputFormat.class);
+		
+      FileInputFormat.setInputPaths(job, new Path(inputPath));
+		FileOutputFormat.setOutputPath(job, new Path(outputPath));
+		
+   
+   2> public class joinMapper extends Mapper(LongWritable,Text,Text,Text){
+         
+         HashTable<String,Array<String>> hashTable  = new HashTable<String,Array<String>>();
+         
+         @override
+         public void setup(Contex context) throws IOException{
+            URI[] FileUris = context.getLocalCachedFiles();
+            for(URI uri:FileUris){
+               File file = new File(uri.getName);
+               FileReader fr = new FireReader(file);
+               BufferReader bf = new BufferReader(fr);
+               String line = "";
+               while((line=bf.readLine())!=null){
+                  //fillInHashMap();
+                  //...
+               }
+            }
+         }
+      
+        @override
+        public void map(LongWritable key,Text key,Context comtext){
+           ....
+        }
+      }
