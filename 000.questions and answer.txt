@@ -91,7 +91,7 @@
 
 8.SecondarySort with MapReduce
 
-   1> public class SSKey implements WritableComparable {
+   1> public class SSKey implements WritableComparable<SSKey> {
          private T fstKey;
          private V sndKey;
          
