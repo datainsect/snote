@@ -88,3 +88,57 @@
 6.saveastextFile saveAsObjectFile 和 serillizer 的关系
 
 7.combineByKeyWithClassTag 求平均值怎么求
+
+8.SecondarySort with MapReduce
+
+   1> public class SSKey implements WritableComparable {
+         private T fstKey;
+         private V sndKey;
+         
+         public read(File in){
+            fstkey.read(in);
+            sndKey.read(in);
+         }
+         
+         public write(File out){
+            fstKey.write(out);
+            sndKey.write(out);
+         }
+         
+         public int compareto(SSKey o1){
+            if(fstKey.equals(o1.fstKey)){
+               return sndKey.compareTo(o1.sndKey);
+            }
+            return fstKey.compareTo(o1.sndKey);
+         }
+         
+         public Boolean equals(SSKey o1) {
+            return this.fskKey.equals(o1.fstKey) && this.sndKey.equals(o1.sndKey);
+         }
+         
+         public int hashcode() {
+            return fstKey.hashcode() * 126 + sndKey.hashCode();
+         }
+      }
+    2> public class SSPartitioner extends Partitoner {
+         
+        @override
+        public int getPartiton(Object k,Object v,int partitionNums){
+            SSKey key = (SSKey) k;
+            return (key.fstKey.hashcode() & Integr.MaxValue ) % partitionNums;
+         }
+       }
+    3> public class GroupingComparator extends WriteComparator {
+         
+        @override
+        public int compareTo(Object o1,Object o2) {
+            SSKey key1 = (SSKey) o1;
+            SSKey key2 = (SSKey) o2;
+            return key1.sndKey.compareTo(key2.sndKey);
+        }
+       }
+       
+     4> public class SSKMapper extends Mapper<Text,Text,SSKey,Text> {
+         @override
+         public void map()
+     }
