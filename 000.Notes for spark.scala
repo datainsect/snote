@@ -124,3 +124,24 @@
 
    val ked = wordsPartitioned.mapPartitions(findK);
    val result = findK(ked.collect);
+
+11.partiton y有什么benefits
+						
+12.那些操作能够保持partitioner?(不改变key的)；
+						
+13.PageRank in spark: &&&&
+   //links:A B C D
+	   B C A
+	   C D A
+	   D B A C
+    val input = sc.textFile("xxx");
+    val links = input.map(process(line));//(A,Array(B,C,D))
+    var ranks = links.mapValues(v=>1);
+    for(i <- 1 to iterNum){
+    	val joined = links.join(ranks); //(A,(Array(B,C,D),1))
+	val contribution = joined.flatMap({
+		e => val seq = e._2._1;
+		     return seq.map(e._2._2*0.85+0.15);
+	});
+	ranks = contribution.reduceByKey(v => v._2+v._2);
+    }
