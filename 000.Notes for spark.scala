@@ -143,5 +143,5 @@
 		e => val seq = e._2._1;
 		     return seq.map(e._2._2*0.85+0.15);
 	});
-	ranks = contribution.reduceByKey(v => v._2+v._2);
+	ranks = contribution.reduceByKey(v => v+v);
     }
