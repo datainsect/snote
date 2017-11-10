@@ -145,3 +145,5 @@
 	});
 	ranks = contribution.reduceByKey(v => v+v);
     }
+
+14. spark boradCast 的最大值是多少？ (数组的最大长度是个Int,Int.MaxValue=2GB)						
