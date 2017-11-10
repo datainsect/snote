@@ -141,3 +141,8 @@
 
   1> http://www.cnblogs.com/acSzz/p/6383618.html
   2> http://blog.csdn.net/gyflyx/article/details/16831015
+
+4.怎么写一个FileInputFormat
+  1>. https://github.com/wallacegui/Mapreduce-CookBook/tree/master/chapter4/src/chapter4/inputformat
+5.怎么写一个FileOutputFomat
+  2>. 
