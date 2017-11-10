@@ -147,3 +147,86 @@
     }
 
 14. spark boradCast 的最大值是多少？ (数组的最大长度是个Int,Int.MaxValue=2GB)						
+
+15. spark和hadoop的相同和区别
+    相同：1> 都是基于 map-reduc 数据流思想
+    不同: 1> hadoop 操作子只有map-reduce；spark 则很丰富；
+	 2>  hadoop 和spark的作业调度系统不同
+	     spark 将Application 划分为多个job (Actions)-> stages(dependency) -> tasks (partitions)
+	 3> spark 尽量不写磁盘，用lineage 容错；
+ 	 4> shuffle 的不同 ，spark中避免排序
+16.spark 的shuffle 过程
+
+17.spark RDD中的shuffle算子
+
+      3.1 去重：
+
+　　　def distinct()
+
+　　　def distinct(numPartitions: Int)
+
+　　　
+
+      3.2 聚合
+
+　　　def reduceByKey(func: (V, V) => V, numPartitions: Int): RDD[(K, V)]
+
+　　　def reduceByKey(partitioner: Partitioner, func: (V, V) => V): RDD[(K, V)]
+
+　　　def groupBy[K](f: T => K, p: Partitioner):RDD[(K, Iterable[V])]
+
+　　　def groupByKey(partitioner: Partitioner):RDD[(K, Iterable[V])]
+
+　　　def aggregateByKey[U: ClassTag](zeroValue: U, partitioner: Partitioner): RDD[(K, U)]
+
+　　　def aggregateByKey[U: ClassTag](zeroValue: U, numPartitions: Int): RDD[(K, U)]
+
+　　　def combineByKey[C](createCombiner: V => C, mergeValue: (C, V) => C, mergeCombiners: (C, C) => C): RDD[(K, C)]
+
+　　　def combineByKey[C](createCombiner: V => C, mergeValue: (C, V) => C, mergeCombiners: (C, C) => C, numPartitions: Int): RDD[(K, C)]
+
+　　　def combineByKey[C](createCombiner: V => C, mergeValue: (C, V) => C, mergeCombiners: (C, C) => C, partitioner: Partitioner, mapSideCombine: Boolean = true, serializer: Serializer = null): RDD[(K, C)]
+
+ 
+
+      3.3 排序
+
+　　　def sortByKey(ascending: Boolean = true, numPartitions: Int = self.partitions.length): RDD[(K, V)]
+
+ 　　  def sortBy[K](f: (T) => K, ascending: Boolean = true, numPartitions: Int = this.partitions.length)(implicit ord: Ordering[K], ctag: ClassTag[K]): RDD[T]
+
+ 
+
+      3.4 重分区
+
+　　　def coalesce(numPartitions: Int, shuffle: Boolean = false, partitionCoalescer: Option[PartitionCoalescer] = Option.empty)
+
+　　　def repartition(numPartitions: Int)(implicit ord: Ordering[T] = null)
+
+ 
+
+      3.5集合或者表操作
+
+　　　def intersection(other: RDD[T]): RDD[T]
+
+　　　def intersection(other: RDD[T], partitioner: Partitioner)(implicit ord: Ordering[T] = null): RDD[T]
+
+ 　　  def intersection(other: RDD[T], numPartitions: Int): RDD[T]
+
+　　　def subtract(other: RDD[T], numPartitions: Int): RDD[T]
+
+　　　def subtract(other: RDD[T], p: Partitioner)(implicit ord: Ordering[T] = null): RDD[T]
+
+　　　def subtractByKey[W: ClassTag](other: RDD[(K, W)]): RDD[(K, V)]
+
+　　　def subtractByKey[W: ClassTag](other: RDD[(K, W)], numPartitions: Int): RDD[(K, V)]
+
+　　　def subtractByKey[W: ClassTag](other: RDD[(K, W)], p: Partitioner): RDD[(K, V)]
+
+　　　def join[W](other: RDD[(K, W)], partitioner: Partitioner): RDD[(K, (V, W))]
+
+　　　def join[W](other: RDD[(K, W)]): RDD[(K, (V, W))]
+
+　　　def join[W](other: RDD[(K, W)], numPartitions: Int): RDD[(K, (V, W))]
+
+　　　def leftOuterJoin[W](other: RDD[(K, W)]): RDD[(K, (V, Option[W]))]
