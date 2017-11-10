@@ -137,3 +137,7 @@
            ....
         }
       }
+3.Hadoop的Shuffle 过程
+
+  1> http://www.cnblogs.com/acSzz/p/6383618.html
+  2> http://blog.csdn.net/gyflyx/article/details/16831015
