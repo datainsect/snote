@@ -145,4 +145,15 @@
 4.怎么写一个FileInputFormat
   1>. https://github.com/wallacegui/Mapreduce-CookBook/tree/master/chapter4/src/chapter4/inputformat
 5.怎么写一个FileOutputFomat
-  2>. 
+  2>.
+	
+6.如何合并hdfs上的小文件
+  1> filecrush
+
+7.join的各种方式：
+  1> map side join
+  2> reduce side join ; => 如何通过secondaryKey优化
+  3> semi Join
+  4> 数据倾斜的 join => high-cardinality的key拿出来做mapsidejoin
+
+8.
