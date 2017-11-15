@@ -157,3 +157,5 @@
   4> 数据倾斜的 join => high-cardinality的key拿出来做mapsidejoin
 
 8.key 倾斜导致的部分reducer完成困难如何解决？<hadoop in practicec 2nd,p287>
+
+9.secondarySort ：1》复写类  2》使用tuple
